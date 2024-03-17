@@ -49,12 +49,17 @@ slide1_bullets <- unordered_list(
   level_list = c(1, 2, 2, 1, 2),
   str_list = c(CE_txt$Slide_Text))
 
+image_file <- external_img("mr_jones.png")
+
 ## S1 format
 ppt_out <- add_slide(ppt_out, layout = "slide1", master = "Theme1") %>%
   ph_with(value = slide1_txt_title, location = ph_location_label(ph_label = "title")) %>%
   ph_with(value = slide1_txt_bodytxt,location = ph_location_label(ph_label = "bodytext")) %>%
   ph_with(value = slide1_bullets, location = ph_location_label(ph_label = "bodybullet")) %>%
+  ph_with(value = image_file, location = ph_location_label(ph_label = "image")) %>%
   set_notes(value = slide1_notes, location = notes_location_type("body"))
+
+
 
 # #################
 # ## SLIDE 1 alt graphic text
