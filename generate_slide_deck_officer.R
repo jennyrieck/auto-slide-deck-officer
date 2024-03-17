@@ -40,9 +40,12 @@ gbr_colors <- c("#9BBB59","#4F81BD", "#C0514D", "#8064A2", oi_colors)
 ## SLIDE 1 bullet points
 #################
 ## S1 TEXT
+slide1_notes <- "Slide 1 features bulleted text and an image. 
+unordered_list() can be used to create bulletpoints with different levels. 
+external_img() allows you to insert image files into a picture location in your pptx template."
+
 slide1_txt_title <- "Data driven decision making"
 slide1_txt_bodytxt <- "We are making better use of the data and information collected during Cat Encounters (CEs) to inform decision-making and appropriate actions to help increase positive cat experiences"
-slide1_notes <- "In Scope CEs -- Encounters that involve one or more cat in the Greater Toronto Area; other animcal encoutners (dogs, rabbits) excluded from this report"
 
 CE_txt <- read_excel(excel_fn, sheet = "Open CE graphic text", col_names = TRUE)
 slide1_bullets <- unordered_list(
@@ -80,7 +83,12 @@ ppt_out <- add_slide(ppt_out, layout = "slide1", master = "Theme1") %>%
 # #################
 # ## SLIDE 2 ggplot + mschart
 # #################
-# 
+
+slide2_notes <- "Slide 2 features editable plots made with ggplot2 and mschart.
+Wrapping the ggplot in dml() turn the ggplot into graphic vectors in which design and text can be edited (left plot). 
+ms_barchart() creates a native microsoft chart in which both chart design, text, and underlying data can be edited (right plot)."
+
+
 CE_month_type <- read_excel(excel_fn, sheet = "CEs by month type") %>%
   replace(is.na(.), 0) %>%
   mutate(FY = factor(FY, ordered = TRUE)) %>%
@@ -172,11 +180,15 @@ ppt_out <- add_slide(ppt_out, layout = "slide2", master = "Theme1") %>%
   ph_with(value = "CEs by Month and Type", location = ph_location_label(ph_label = "titlegraph1")) %>%
   ph_with(value = gg_vbar_month_by_type, location = ph_location_label(ph_label = "graph1")) %>%
   ph_with(value = "CE Grade", location = ph_location_label(ph_label = "titlegraph2")) %>%
-  ph_with(value = ms_hbars_grade, location = ph_location_label(ph_label = "graph2"))
+  ph_with(value = ms_hbars_grade, location = ph_location_label(ph_label = "graph2")) %>%
+  set_notes(value = slide2_notes, location = notes_location_type("body"))
 
 #################
 ## SLIDE 3 ggplot
 #################
+
+slide3_notes <- "Slide 2 features static plots made with ggplot2.
+Without wrapping the ggplots in dml(), the plots are saved as static image files in the final powerpoint."
 
 #########################
 ### s3 CHART 2 horiz bar - outcome
@@ -193,7 +205,7 @@ gg_hbar_outcome <- ggplot(CE_outcomes, aes(x = `Outcome Count`, y = "", fill = r
         rect = element_rect(fill = "transparent")) + 
   guides(fill=guide_legend(nrow=3, byrow = TRUE))
 
-gg_hbar_outcome <- dml(ggobj = gg_hbar_outcome, bg = "transparent")
+#gg_hbar_outcome <- dml(ggobj = gg_hbar_outcome, bg = "transparent")
 
 #########################
 ### s3 CHART 2 table - actions
@@ -225,7 +237,7 @@ ppt_out <- add_slide(ppt_out, layout = "slide3", master = "Theme1") %>%
   ph_with(value = gg_hbar_outcome, location = ph_location_label(ph_label = "graph1")) %>%
   ph_with(value = "Actions associated with Cat Encounter Outcomes", location = ph_location_label(ph_label = "titlegraph2")) %>%
   ph_with(value = gg_table_actions, location = ph_location_label(ph_label = "graph2")) %>%
-  set_notes(value = "A CE can be closed with multiple actions", location = notes_location_type("body"))
+  set_notes(value = slide3_notes, location = notes_location_type("body"))
 
 #############
 ## Save ppt
