@@ -52,13 +52,16 @@ slide1_bullets <- unordered_list(
   level_list = c(1, 2, 2, 1, 2),
   str_list = c(CE_txt$Slide_Text))
 
-image_file <- external_img("mr_jones.png")
+image_file1 <- external_img("mr_jones2.png")
+image_file2 <- external_img("mr_jones4.png")
+
 
 ppt_out <- add_slide(ppt_out, layout = "slide1", master = "Theme1") %>%
   ph_with(value = slide1_txt_title, location = ph_location_label(ph_label = "title")) %>%
   ph_with(value = slide1_txt_bodytxt,location = ph_location_label(ph_label = "bodytext")) %>%
   ph_with(value = slide1_bullets, location = ph_location_label(ph_label = "bodybullet")) %>%
-  ph_with(value = image_file, location = ph_location_label(ph_label = "image")) %>%
+  ph_with(value = image_file1, location = ph_location_label(ph_label = "image1")) %>%
+  ph_with(value = image_file2, location = ph_location_label(ph_label = "image2")) %>%
   set_notes(value = slide1_notes, location = notes_location_type("body"))
 
 # ########################
