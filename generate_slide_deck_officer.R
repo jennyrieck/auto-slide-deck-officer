@@ -9,14 +9,12 @@ library(ggforce)
 library(lubridate)
 
 #################
-## Data input
+## Specify data file and report parameters
 #################
+
 excel_fn <- "officer_demo_cat_data.xlsx"
 template_fn <- "slide-deck-officer-template.pptx"
 report_params <- read_excel(excel_fn, sheet = "Report_Params")
-
-report_type <- report_params$Report_Name
-report_type_short <- report_params$Report_Name_Short
 
 start_date <- paste(day(report_params$Start_Date), 
                     month(report_params$Start_Date, label = TRUE), 
@@ -29,9 +27,10 @@ end_date <- paste(day(report_params$End_Date),
 ## ppt template
 #################
 
+# read in the powerpoint template with custom slide themes
 ppt_out <- read_pptx(template_fn) 
 
-# color palettes
+# color palettes for plotting
 oi_colors <- as.vector(palette.colors()[2:9])
 ppt_colors <- c("#4F81BD", "#C0514D", "#9BBB59", "#8064A2", "#4bABC6")
 gbr_colors <- c("#9BBB59","#4F81BD", "#C0514D", "#8064A2", oi_colors)
@@ -40,14 +39,14 @@ gbr_colors <- c("#9BBB59","#4F81BD", "#C0514D", "#8064A2", oi_colors)
 ## SLIDE 1 bullet points
 ########################
 
-slide1_notes <- "Slide 1 features bulleted text and an image. 
+slide1_notes <- "Slide 1 features bulleted text and images. 
 unordered_list() can be used to create bulletpoints with different levels. 
 external_img() allows you to insert image files into a picture location in your pptx template."
 
-slide1_txt_title <- "Data driven decision making"
-slide1_txt_bodytxt <- "We are making better use of the data and information collected during Cat Encounters (CEs) to inform decision-making and appropriate actions to help increase positive cat experiences"
+slide1_txt_title <- "Data-driven decision making"
+slide1_txt_bodytxt <- "We are making better use of the data and information collected during Cat Encounters (CEs) in the Greater Toronto Area (GTA) to inform decision-making and appropriate actions to increase positive cat experiences"
 
-CE_txt <- read_excel(excel_fn, sheet = "Open CE graphic text", col_names = TRUE)
+CE_txt <- read_excel(excel_fn, sheet = "Summary text", col_names = TRUE)
 slide1_bullets <- unordered_list(
   level_list = c(1, 2, 2, 1, 2),
   str_list = c(CE_txt$Slide_Text))
@@ -55,7 +54,7 @@ slide1_bullets <- unordered_list(
 image_file1 <- external_img("mr_jones2.png")
 image_file2 <- external_img("mr_jones4.png")
 
-
+### Slide 1 print to powerpoint
 ppt_out <- add_slide(ppt_out, layout = "slide1", master = "Theme1") %>%
   ph_with(value = slide1_txt_title, location = ph_location_label(ph_label = "title")) %>%
   ph_with(value = slide1_txt_bodytxt,location = ph_location_label(ph_label = "bodytext")) %>%
@@ -64,26 +63,25 @@ ppt_out <- add_slide(ppt_out, layout = "slide1", master = "Theme1") %>%
   ph_with(value = image_file2, location = ph_location_label(ph_label = "image2")) %>%
   set_notes(value = slide1_notes, location = notes_location_type("body"))
 
-# ########################
-# ## SLIDE 2 ggplot + mschart
-# ########################
+########################
+## SLIDE 2 ggplot + mschart
+########################
 
 slide2_notes <- "Slide 2 features editable plots made with ggplot2 and mschart.
-Wrapping the ggplot in dml() turn the ggplot into graphic vectors in which design and text can be edited (left plot). 
+Wrapping the ggplot in dml() will turn the ggplot into a graphic vector in which design and text can be edited (left plot). 
 ms_barchart() creates a native microsoft chart in which both chart design, text, and underlying data can be edited (right plot)."
-
 
 CE_month_type <- read_excel(excel_fn, sheet = "CEs by month type") %>%
   replace(is.na(.), 0) %>%
   mutate(FY = factor(FY, ordered = TRUE)) %>%
   mutate(Quarter = factor(Quarter, ordered = TRUE)) %>%
-  mutate(Month = factor(Month,  c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), ordered = TRUE))
+  mutate(Month = factor(Month,  c("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), ordered = TRUE))
 
 CE_month_type_long <- CE_month_type %>%
-  pivot_longer(cols = 4:(dim(CE_month_type)[2]), names_to = "type", values_to = "count") %>%
-  unite("time", FY:Month, remove = FALSE)
+  pivot_longer(cols = 4:(dim(CE_month_type)[2]), names_to = "type", values_to = "count") 
 
-### s2 ggplot
+### Slide 2 editable ggplot - Cat breed over time
 ## https://stackoverflow.com/questions/20571306/multi-row-x-axis-labels-in-ggplot-line-chart
 ## https://github.com/tidyverse/ggplot2/issues/2933
 gg_vbar_month_by_type <- ggplot(CE_month_type_long, aes(y = count, x = Month, fill = reorder(type, count, sum))) + 
@@ -108,7 +106,7 @@ gg_vbar_month_by_type <- ggplot(CE_month_type_long, aes(y = count, x = Month, fi
 
 gg_vbar_month_by_type <- dml(ggobj = gg_vbar_month_by_type, bg = "transparent")
 
-### s2 ms barchart
+### Slide 2 editable ms barchart - Cat grade
 CE_grade <- read_excel(excel_fn, sheet = "CE Grade", col_names = TRUE) %>%  mutate(Type = factor(Type, levels = Type))
 
 CE_grade_long <- CE_grade %>% pivot_longer(cols = 2:dim(CE_grade)[2], names_to = "grade", values_to = "count")
@@ -124,15 +122,16 @@ ms_hbars_grade <- ms_barchart(data = CE_grade_long, x = "Type", y = "count", gro
   chart_ax_x(.,major_tick_mark = "none", minor_tick_mark = "none", display = FALSE, tick_label_pos = "none") %>%
   chart_ax_y(.,major_tick_mark = "none", minor_tick_mark = "none", display = FALSE, tick_label_pos = "none") %>%
   chart_theme(., legend_position = "n", grid_major_line = fp_border(style = "none"), grid_major_line_y = fp_border(style = "none"))
-#print(slide4_ms_bars, preview = TRUE)
+### To preview ms chart:
+# print(slide4_ms_bars, preview = TRUE)
 
-## S2 ppt out
+## Slide 2 print to powerpoint file
 ppt_out <- add_slide(ppt_out, layout = "slide2", master = "Theme1") %>%
-  ph_with(value = paste(report_type_short, "CEs by Month and Type"), location = ph_location_label(ph_label = "title")) %>%
+  ph_with(value = "Characteristics of GTA Cats Encountered", location = ph_location_label(ph_label = "title")) %>%
   ph_with(value = paste(start_date, "and", end_date), location = ph_location_label(ph_label = "subtitle")) %>%
-  ph_with(value = "CEs by Month and Type", location = ph_location_label(ph_label = "titlegraph1")) %>%
+  ph_with(value = "Cat Breed", location = ph_location_label(ph_label = "titlegraph1")) %>%
   ph_with(value = gg_vbar_month_by_type, location = ph_location_label(ph_label = "graph1")) %>%
-  ph_with(value = "CE Grade", location = ph_location_label(ph_label = "titlegraph2")) %>%
+  ph_with(value = "Cat Grade", location = ph_location_label(ph_label = "titlegraph2")) %>%
   ph_with(value = ms_hbars_grade, location = ph_location_label(ph_label = "graph2")) %>%
   set_notes(value = slide2_notes, location = notes_location_type("body"))
 
@@ -140,10 +139,10 @@ ppt_out <- add_slide(ppt_out, layout = "slide2", master = "Theme1") %>%
 ## SLIDE 3 ggplot
 ########################
 
-slide3_notes <- "Slide 2 features static plots made with ggplot2.
+slide3_notes <- "Slide 3 features static plots made with ggplot2.
 Without wrapping the ggplots in dml(), the plots are saved as static image files in the final powerpoint."
 
-### s3 ggplot horiz bar
+### Slide 3 static ggplot - CE Outcome
 CE_outcomes <- read_excel(excel_fn, sheet = "CE Outcome", col_names = TRUE) 
 
 gg_hbar_outcome <- ggplot(CE_outcomes, aes(x = `Outcome Count`, y = "", fill = reorder(`Outcome Label`, -`Outcome Count`))) + geom_bar(position = position_fill(reverse = TRUE), stat="identity", color = "white") +
@@ -157,7 +156,7 @@ gg_hbar_outcome <- ggplot(CE_outcomes, aes(x = `Outcome Count`, y = "", fill = r
         rect = element_rect(fill = "transparent")) + 
   guides(fill=guide_legend(nrow=3, byrow = TRUE))
 
-### s3 ggplot table
+### Slide 3 static ggplot table - Cat Actions
 CE_actions <- read_excel(excel_fn, sheet = "Actions", col_names = TRUE) 
 
 CE_actions_long <- CE_actions %>% pivot_longer(cols = 2:dim(CE_actions)[2], names_to = "type", values_to = "count") %>%
@@ -179,9 +178,10 @@ gg_table_actions <- ggplot(CE_actions_long, aes(x = count, y = reorder(`Action C
         strip.text.x = element_text(size = 16, face = "bold"), panel.border = element_rect(color = "darkgray"),
         rect = element_rect(fill = "transparent"))
 
+### Slide 3 print to powerpoint file
 ppt_out <- add_slide(ppt_out, layout = "slide3", master = "Theme1") %>%
-  ph_with(value = "Cat Encounter Outcomes and Actions", location = ph_location_label(ph_label = "title")) %>%
-  ph_with(value = paste(start_date, "and", end_date, "-", sum(CE_outcomes$`Outcome Count`, na.rm = TRUE), "CEs"), location = ph_location_label(ph_label = "subtitle")) %>%
+  ph_with(value = "GTA Cat Encounter Outcomes", location = ph_location_label(ph_label = "title")) %>%
+  ph_with(value = paste(start_date, "and", end_date), location = ph_location_label(ph_label = "subtitle")) %>%
   ph_with(value =  "Cat Encounter Outcomes", location = ph_location_label(ph_label = "titlegraph1")) %>%
   ph_with(value = gg_hbar_outcome, location = ph_location_label(ph_label = "graph1")) %>%
   ph_with(value = "Actions associated with Cat Encounter Outcomes", location = ph_location_label(ph_label = "titlegraph2")) %>%
@@ -192,5 +192,5 @@ ppt_out <- add_slide(ppt_out, layout = "slide3", master = "Theme1") %>%
 ## Save ppt
 #####################
 
-ppt_out_fn <- paste0("Cat Encounters_", report_type_short, " Numbers_", format(report_params$Start_Date, '%d-%b-%Y'), " to ", format(report_params$End_Date, '%d-%b-%Y'), ".pptx")
+ppt_out_fn <- paste0("Cat Encounters_GTA Numbers_", format(report_params$Start_Date, '%d-%b-%Y'), " to ", format(report_params$End_Date, '%d-%b-%Y'), ".pptx")
 print(ppt_out, target = ppt_out_fn)
