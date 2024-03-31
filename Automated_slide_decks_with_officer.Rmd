@@ -1,7 +1,7 @@
 ---
 title: "Automated slide decks with officer"
 author: "Jenny Rieck"
-date: "`r Sys.Date()`"
+date: "2023-03-31"
 output: 
   html_document:
     toc: true
@@ -13,15 +13,19 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
-library(tidyr)
-library(dplyr)
-library(readxl)
-library(officer)
-library(rvg)
-library(mschart)
-library(ggplot2)
-library(ggforce)
-library(lubridate)
+
+library(groundhog)
+groundhog_date <- "2024-03-01"
+
+groundhog.library(tidyr, groundhog_date)
+groundhog.library(dplyr, groundhog_date)
+groundhog.library(readxl, groundhog_date)
+groundhog.library(officer, groundhog_date)
+groundhog.library(rvg, groundhog_date)
+groundhog.library(mschart, groundhog_date)
+groundhog.library(ggplot2, groundhog_date)
+groundhog.library(ggforce, groundhog_date)
+groundhog.library(lubridate, groundhog_date)
 ```
 
 ## Using officer to report on Cat Encounters in the GTA
